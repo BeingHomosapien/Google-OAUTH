@@ -7,8 +7,8 @@ const https = require('https')
 const fs = require('fs')
 
 // Including Key and Certificate
-const key = fs.readFileSync('./key.pem');
-const cert = fs.readFileSync('./cert.pem');
+const key = fs.readFileSync('./server.key');
+const cert = fs.readFileSync('./server.crt');
 
 
 const app = express()
