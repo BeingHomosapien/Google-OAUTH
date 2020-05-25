@@ -7,8 +7,8 @@ const https = require('https')
 const fs = require('fs')
 
 // Including Key and Certificate
-const key = fs.readFileSync('./server.key');
-const cert = fs.readFileSync('./server.crt');
+// const key = fs.readFileSync('./server.key');
+// const cert = fs.readFileSync('./server.crt');
 
 
 const app = express()
@@ -22,7 +22,7 @@ app.use(cookie({
 
 app.set('view engine', 'ejs')
 
-const server = https.createServer({key: key, cert: cert }, app);
+// const server = https.createServer({key: key, cert: cert }, app);
 passport.serializeUser(function(user, done) {
     return done(null, user.id);
 });
@@ -53,7 +53,7 @@ app.get('/auth/google/callback', passport.authenticate('google', {failureRedirec
 })
 
 
-server.listen(3000, (err)=>{
+app.listen(3000, (err)=>{
     if(!err){
         console.log("Listening at 3000")
     }
