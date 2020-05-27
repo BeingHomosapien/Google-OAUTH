@@ -3,15 +3,14 @@ const passport = require('passport')
 const google = require('passport-google-oauth20').Strategy
 const path = require('path')
 const cookie = require('cookie-session')
-const https = require('https')
-const fs = require('fs')
-const httpsLocalhost = require('https-localhost')()
-
+const layout = require('express-ejs-layouts')
+const User = require('./models/user')
+const parser = require('body-parser')
 // Including Key and Certificate
 // const key = fs.readFileSync('./server.key');
 // const cert = fs.readFileSync('./server.crt');
 
-
+require('./mongodb')
 const app = express()
 app.set('views', path.join(__dirname, '/views') )
 app.use(passport.initialize())
@@ -20,7 +19,10 @@ app.use(cookie({
     name:'tuto',
     keys:['key1', 'key2']
 }))
-
+app.use(layout)
+app.use(parser.urlencoded(
+    {extended: true}
+))
 app.set('view engine', 'ejs')
 
 // const server = https.createServer({key: key, cert: cert }, app);
@@ -37,13 +39,11 @@ passport.use(new google({
     clientSecret:"YXD7ROlvVcEJVds3VnOBrMZt",
     callbackURL: "https://8f121d3f.ngrok.io/auth/google/callback" // To have a secure connection
 }, function(token, tokenSecret, profile, done) {
-    console.log('Reached Here')
     console.log(profile);
     return done(null, profile)
 }))
 
 app.get('/', (req, res)=>{
-    console.log("Rohanraj")
     res.render('index.ejs')
 })
 
@@ -53,6 +53,51 @@ app.get('/auth/google/callback', passport.authenticate('google', {failureRedirec
     res.redirect('/')
 })
 
+app.get('/register', function(req, res){
+    res.render('register.ejs')
+})
+
+app.post('/register', function(req, res){
+    var error = ""
+    const {name, email, password, password2} = req.body
+    if (name.length==0 || email.length==0 || password.length ==0 || password2. length==0){
+        error = "PLease fill all Fields"
+    }
+    if(password!=password2){
+        error="Passwords are not same please try again!!"
+    }
+    else{
+        User.findOne({'email': email}, function(err, user){
+            if(err){
+                console.log(err)
+            }
+            else if(user){
+                error = "User Already Exists"
+            }
+            else{
+                var newUser = new User()
+                newUser.email = email
+                newUser.name = name
+                newUser.password = password
+
+                newUser.save(function (err) {
+                    if(!err){
+                        console.log('User Added Successfully')
+                    }
+                    else{
+                        console.log(err)
+                    }
+                })
+            }
+        })
+    }
+    
+    return res.render('register.ejs', {error: error, msg: message})
+})
+
+app.get('/login', function(req, res){
+    res.render('login.ejs')
+})
 
 app.listen(3000, (err)=>{
     if(!err){
