@@ -54,11 +54,8 @@ app.get('/auth/google/callback', passport.authenticate('google', {failureRedirec
 })
 
 
-const certs = httpsLocalhost.getCerts()
-const server = https.createServer(certs, app)
-server.listen(3000)
-// app.listen(3000, (err)=>{
-//     if(!err){
-//         console.log("Listening at 3000")
-//     }
-// });
+app.listen(3000, (err)=>{
+    if(!err){
+        console.log("Listening at 3000")
+    }
+});
