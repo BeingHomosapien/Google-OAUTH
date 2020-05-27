@@ -1,6 +1,5 @@
 const express = require('express')
 const passport = require('passport')
-const google = require('passport-google-oauth20').Strategy
 const path = require('path')
 const cookie = require('cookie-session')
 const layout = require('express-ejs-layouts')
@@ -25,25 +24,10 @@ app.use(parser.urlencoded(
 ))
 app.set('view engine', 'ejs')
 
-// const server = https.createServer({key: key, cert: cert }, app);
-passport.serializeUser(function(user, done) {
-    return done(null, user.id);
-});
-  
-passport.deserializeUser(function(user, done) {
-    return done(null, user)
-});
-
-passport.use(new google({
-    clientID:"602939967550-715p9modvd1fu3rengcdqd2djnmrr7l0.apps.googleusercontent.com",
-    clientSecret:"YXD7ROlvVcEJVds3VnOBrMZt",
-    callbackURL: "https://8f121d3f.ngrok.io/auth/google/callback" // To have a secure connection
-}, function(token, tokenSecret, profile, done) {
-    console.log(profile);
-    return done(null, profile)
-}))
+require('./passport')(passport)
 
 app.get('/', (req, res)=>{
+    console.log(req.user)
     res.render('index.ejs')
 })
 
@@ -92,12 +76,14 @@ app.post('/register', function(req, res){
         })
     }
     
-    return res.render('register.ejs', {error: error, msg: message})
+    return res.render('register.ejs', {error: error})
 })
 
 app.get('/login', function(req, res){
     res.render('login.ejs')
 })
+
+app.post('/login', passport.authenticate('local',{ failureRedirect:'/login', successRedirect:'/' }))
 
 app.listen(3000, (err)=>{
     if(!err){
