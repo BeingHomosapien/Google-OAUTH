@@ -5,6 +5,7 @@ const path = require('path')
 const cookie = require('cookie-session')
 const https = require('https')
 const fs = require('fs')
+const httpsLocalhost = require('https-localhost')()
 
 // Including Key and Certificate
 // const key = fs.readFileSync('./server.key');
@@ -53,8 +54,11 @@ app.get('/auth/google/callback', passport.authenticate('google', {failureRedirec
 })
 
 
-app.listen(3000, (err)=>{
-    if(!err){
-        console.log("Listening at 3000")
-    }
-});
+const certs = httpsLocalhost.getCerts()
+const server = https.createServer(certs, app)
+server.listen(3000)
+// app.listen(3000, (err)=>{
+//     if(!err){
+//         console.log("Listening at 3000")
+//     }
+// });
