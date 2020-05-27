@@ -1,6 +1,8 @@
 const google = require('passport-google-oauth20').Strategy
 const local = require('passport-local').Strategy
 const User = require('./models/user')
+const GoogleUser = require('./models/google')
+
 module.exports = function(passport){
     passport.serializeUser(function(user, done) {
         return done(null, user.id);
@@ -17,6 +19,7 @@ module.exports = function(passport){
         User.findOne({'email': username}, function(err, user){
             if(err){
                 console.log(err)
+                return done(err)
             }
             else if(user){
                 if (password==user.password){
@@ -39,7 +42,29 @@ module.exports = function(passport){
         clientSecret:"YXD7ROlvVcEJVds3VnOBrMZt",
         callbackURL: "https://8f121d3f.ngrok.io/auth/google/callback" // To have a secure connection
     }, function(token, tokenSecret, profile, done) {
-        console.log(profile);
-        return done(null, profile)
+        GoogleUser.findOne({'id':profile.id}, function(err, user){
+            if(err){
+                console.log(err)
+                return done(err)
+            }
+            else if(user){
+                return done(null,user)
+            }
+            else{
+                var newUser = new GoogleUser()
+                newUser.id = profile.id
+                newUser.email = profile.emails[0].value()
+                newUser.name = profile.name.givenName + " " + profile.name.middleName + " " + profile.name.familyName
+
+                newUser.save(function(err){
+                    if(!err){
+                        console.log("Added Successfully!!")
+                    }
+                    else{
+                        console.log("Error" + err)
+                    }
+                })
+            }
+        })
     }))
 }
